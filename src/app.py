@@ -14,57 +14,52 @@ conexion = MySQL(app)
 def index():
     return "HOLA MUNDO DESDE FLASK"
 
-@app.route('/login', methods=["GET"])
-def login():
+@app.route('/listado_reservas', methods=["GET"])
+def listado_reservas():
     db = Sem_Db_Manager()
-    result=db.login(conexion)
+    result=db.list_reservas(conexion)
     #print("IMPRIMO RETURN DEL METODO", result)
     if result["mensaje"]=="ERROR":
-        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"})
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
     elif (result["mensaje"]=="SI"):
         return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "LISTADO DE USUARIOS"})
     else:
-        return jsonify({"status":False, "codigo":453, "data":"","mensaje": "NO HAY USUARIOS EN LA BASE"})
-'''     
-status=True o False
-Codigo = 200 o 400
-data = 
-mensaje = 
- '''
+        return jsonify({"status":False, "codigo":453, "data":"","mensaje": "NO HAY USUARIOS EN LA BASE"}),453
+
+
+@app.route('/usuario', methods=["POST"])
+def busqueda_x_usuario():
+    db = Sem_Db_Manager()
+    result= db.busqueda_usuario(conexion)
+    if result["mensaje"]=="ERROR":
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
+
+    elif (result["mensaje"]=="NOPASS"):
+        return jsonify({"status": False, "codigo": 454, "data":"", "mensaje": "USUARIO Y PASSWORD NO COINCIDEN"}),454
+
+    elif (result["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "DATOS DE USUARIO ENCONTRADOS"})
+    else:
+        return jsonify({"status":False, "codigo":453, "data":"","mensaje": "EL USUARIO BUSCADO NO SE ENCUENTRA EN BASE"}),453
     
-
-@app.route('/login/<dni>', methods=["GET"])
-def busqueda_x_usuario(dni):
-    try:
-        cursor = conexion.connection.cursor()
-        sql = "SELECT * FROM usuarios WHERE dniusuario = {0}".format(dni)
-        cursor.execute(sql)
-        datos = cursor.fetchone()
-        if datos != None:
-            usuario = {"nombre y apellido":datos[2]+" "+datos[3]}
-            return jsonify({"usuario":usuario, "mensaje": "DATOS DEL USUARIO"})
-        else:
-            return jsonify({"mensaje":"USUARIO NO ENCOTRADO"})
-              
-    except Exception as ex:
-        print(ex)
-        return jsonify({"mensaje":"ERROR"})
-
+    
 @app.route('/registrar', methods=['POST'])
 def registro_de_usuario():
-     #print(request.json)
-    try:
-        cursor = conexion.connection.cursor()
-        sql ="""INSERT INTO usuarios (dniusuario, nomusuario, apeusuario, direusuario, numusuario, pisousuario, deptousuario, localusuario, provusuario, 
-            fnacusuario, faltusuario, celusuario, mailusuario, passusuario) 
-            VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}')""".format(request.json["dniusuario"],request.json["nomusuario"],request.json["apeusuario"],request.json["direusuario"],request.json["numusuario"],request.json["pisousuario"],request.json["deptousuario"],request.json["localusuario"],request.json["provusuario"],request.json["fnacusuario"],request.json["faltusuario"],request.json["celusuario"],request.json["mailusuario"],request.json["passusuario"])
-        cursor.execute(sql)
-        conexion.connection.commit()
-        return jsonify({"mensaje":"USUARIO REGISTRADO"})
-              
-    except Exception as ex:
-        print(ex)
-        return jsonify({"mensaje":"ERROR"})
+    db = Sem_Db_Manager()
+    result= db.registro_usuario(conexion)
+    if result["mensaje"]=="ERROR":
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
+
+    elif (result["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "USUARIO REGISTRADO"})
+    
+    elif (result["mensaje"]=="HAY USUARIO"):
+        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "USUARIO YA EXISTENTE"}),456
+    
+    else:
+        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "USUARIO NO PUEDO REGISTRARSE"}), 455
+     
+    
 
 @app.route("/eliminar/<dni>", methods=["DELETE"])
 def eliminar_usuario(dni):
