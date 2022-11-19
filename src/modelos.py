@@ -44,7 +44,7 @@ class Sem_Db_Manager(object):
                     self.usuario = {"id":dato[0], "dni":dato[1],"nombre":dato[2], "apellido":dato[3],"direccion":dato[4],"numero":dato[5],"piso":dato[6],"depto":dato[7],"local":dato[8],"prov":dato[9],"fnac":dato[10],"falta":dato[11],"celu":dato[12],"mail":dato[13]}
                     self.usuarios.append(self.usuario)
                     #print (self.usuario)
-                #print (self.usuarios)
+                print ("IMPRIMO LO QUE ME TRAIGO DE LA BASE",self.usuarios)
                 return {"usuarios":self.usuarios, "mensaje":"SI"}
             else: 
                 return {"usuarios":"", "mensaje":"NO"}
@@ -71,6 +71,26 @@ class Sem_Db_Manager(object):
         except Exception as ex:
             print(ex)
             return  {"usuarios":"", "mensaje":"ERROR"}
+    
+    
+    def busqueda_vehiculo(self,conexion):
+        print("ESTOY EN BUSQUEDA VEHICULO")
+        try:
+            self.cursor = conexion.connection.cursor()
+            self.sql = "SELECT * FROM vehiculo WHERE domvehiculo = {0}".format(request.json["domvehiculo"])
+            print("IMPRIMO EL SQL: \n", self.sql)
+            self.cursor.execute(self.sql)
+            conexion.connection.commit()
+            self.dato = self.cursor.fetchone()
+            if self.dato != None:
+                self.vehiculo = {"idvehiculo":self.dato[0], "domvehiculo":self.dato[1],"marvehiculo":self.dato[2], "tipovehiculo":self.dato[3]}
+                return {"vehiculo":self.usuario, "mensaje":"SI"}
+                
+            else:
+                return {"vehiculo":"", "mensaje":"NO"}
+        except Exception as ex:
+            print(ex)
+            return  {"vehiculo":"", "mensaje":"ERROR"}
         
         
         
@@ -98,4 +118,37 @@ class Sem_Db_Manager(object):
             
         else:
             return {"usuarios":"", "mensaje":"HAY USUARIO"}
+        
+        
+    def registro_vehiculo(self,conexion):
+        self.hay_vehiculo = self.busqueda_vehiculo(conexion)
+        if (self.hay_vehiculo["mensaje"]!="ERROR"):
+            if (self.hay_vehiculo["mensaje"]=="NO"):
+                try:
+                    self.cursor = conexion.connection.cursor()
+                    self.sql ="""INSERT INTO vehiculo (domvehiculo, marvehiculo, tipovehiculo) 
+                        VALUES ('{0}','{1}','{2}')""".format(request.json["domvehiculo"],request.json["marvehiculo"],request.json["tipovehiculo"])
+                    self.cursor.execute(self.sql)
+                    conexion.connection.commit()
+                    self.sql = "SELECT * FROM vehiculo WHERE domvehiculo = {0}".format(request.json["domvehiculo"])
+                    self.cursor.execute(self.sql)
+                    conexion.connection.commit()
+                    self.dato = self.cursor.fetchone()
+                    # COMPRUEBA QUE SE HAYA REALIZADO EL INGRESO DEL NUEVO REGISTRO
+                    if self.dato != None:
+                        self.vehiculo = {"idvehiculo":self.dato[0], "domvehiculo":self.dato[1],"marvehiculo":self.dato[2], "tipovehiculo":self.dato[3]}
+                        return {"vehiculos":self.vehiculo, "mensaje":"SI"}
+                
+                except Exception as ex:
+                    print(ex)
+                    return  {"vehiculos":"", "mensaje":"ERROR"}
+            else:
+                return {"vehiculos":"", "mensaje":"HAY DOMINIO"}
+            
+        else:
+            return {"vehiculos":"", "mensaje":"ERROR"}
+                    
+                
+      
+ 
         

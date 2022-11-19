@@ -22,6 +22,8 @@ def listado_reservas():
     if result["mensaje"]=="ERROR":
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
     elif (result["mensaje"]=="SI"):
+        ''' print(result)
+        print(type(result)) '''
         return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "LISTADO DE USUARIOS"})
     else:
         return jsonify({"status":False, "codigo":453, "data":"","mensaje": "NO HAY USUARIOS EN LA BASE"}),453
@@ -43,7 +45,7 @@ def busqueda_x_usuario():
         return jsonify({"status":False, "codigo":453, "data":"","mensaje": "EL USUARIO BUSCADO NO SE ENCUENTRA EN BASE"}),453
     
     
-@app.route('/registrar', methods=['POST'])
+@app.route('/registrar_usuario', methods=['POST'])
 def registro_de_usuario():
     db = Sem_Db_Manager()
     result= db.registro_usuario(conexion)
@@ -59,6 +61,24 @@ def registro_de_usuario():
     else:
         return jsonify({"status":False, "codigo":455, "data":"","mensaje": "USUARIO NO PUEDO REGISTRARSE"}), 455
      
+
+@app.route('/registrar_vehiculo', methods=['POST'])
+def registro_de_vehiculo():
+    db = Sem_Db_Manager()
+    result= db.registro_vehiculo(conexion)
+    if result["mensaje"]=="ERROR":
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
+
+    elif (result["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":result["vehiculo"], "mensaje": "VEHI REGISTRADO"})
+    
+    elif (result["mensaje"]=="HAY VEHICULO"):
+        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "DOMINIO YA EXISTENTE"}),456
+    
+    else:
+        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "DOMINIO NO PUDO REGISTRARSE"}), 455
+     
+    
     
 
 @app.route("/eliminar/<dni>", methods=["DELETE"])
