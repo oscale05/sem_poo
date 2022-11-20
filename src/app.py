@@ -1,23 +1,45 @@
-#! /usr/bin/etc  python3
+#!/usr/bin/etc  python3
 #-*- coding: utf-8 -*-
 
 from flask  import Flask, render_template, jsonify , request
 from config import config
-from flask_mysqldb import MySQL
+import db
+
+
 from modelos import Sem_Db_Manager
 
 
 app = Flask(__name__)
-conexion = MySQL(app)
+
 
 @app.route('/')
 def index():
     return "HOLA MUNDO DESDE FLASK"
 
+
+@app.route('/login', methods=["POST"])
+def login():
+    dbase = Sem_Db_Manager()
+    result= dbase.login()
+    if result["mensaje"]=="ERROR":
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
+
+    elif (result["mensaje"]=="NOPASS"):
+        return jsonify({"status": False, "codigo": 454, "data":"", "mensaje": "USUARIO Y PASSWORD NO COINCIDEN"}),454
+
+    elif (result["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "DATOS DE USUARIO ENCONTRADOS"})
+    else:
+        return jsonify({"status":False, "codigo":453, "data":"","mensaje": "EL USUARIO BUSCADO NO SE ENCUENTRA EN BASE"}),453
+    
+
+
+
+
 @app.route('/listado_reservas', methods=["GET"])
 def listado_reservas():
     db = Sem_Db_Manager()
-    result=db.list_reservas(conexion)
+    result=db.list_reservas()
     #print("IMPRIMO RETURN DEL METODO", result)
     if result["mensaje"]=="ERROR":
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
@@ -32,7 +54,7 @@ def listado_reservas():
 @app.route('/usuario', methods=["POST"])
 def busqueda_x_usuario():
     db = Sem_Db_Manager()
-    result= db.busqueda_usuario(conexion)
+    result= db.busqueda_usuario()
     if result["mensaje"]=="ERROR":
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}),452
 
@@ -48,7 +70,7 @@ def busqueda_x_usuario():
 @app.route('/registrar_usuario', methods=['POST'])
 def registro_de_usuario():
     db = Sem_Db_Manager()
-    result= db.registro_usuario(conexion)
+    result= db.registro_usuario()
     if result["mensaje"]=="ERROR":
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
 
@@ -65,7 +87,7 @@ def registro_de_usuario():
 @app.route('/registrar_vehiculo', methods=['POST'])
 def registro_de_vehiculo():
     db = Sem_Db_Manager()
-    result= db.registro_vehiculo(conexion)
+    result= db.registro_vehiculo()
     if result["mensaje"]=="ERROR":
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
 
@@ -80,7 +102,7 @@ def registro_de_vehiculo():
      
     
     
-
+''' 
 @app.route("/eliminar/<dni>", methods=["DELETE"])
 def eliminar_usuario(dni):
     try:
@@ -106,7 +128,7 @@ def actualizar_usuario(dni):
               
     except Exception as ex:
         print(ex)
-        return jsonify({"mensaje":"ERROR"})
+        return jsonify({"mensaje":"ERROR"}) '''
 
 
 def pagina_no_encontrada(error):

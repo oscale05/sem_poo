@@ -2,42 +2,35 @@
 #-*- coding: utf-8 -*-
 
 from flask  import render_template, jsonify , request
-import config
-import db
+import config, db
+import pymysql 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-class Sem_Db_Manager():
+class Sem_Db_Manager(object):
     
       
     def login(self):
         try:
-            self.cursor = db.conexion_db()
-            self.cursor.execute("SELECT * FROM usuarios WHERE dniusuario = %s", (request.json["dniusuario"],))
-            print("IMPRIMO EL DNI, ", request.json["dniusuario"])    
-            self.dato = self.cursor.fetchone()
-            if self.dato != None:
-                self.usuario = {"id":self.dato[0], "dni":self.dato[1],"nombre":self.dato[2], "apellido":self.dato[3],"direccion":self.dato[4],"numero":self.dato[5],"piso":self.dato[6],"depto":self.dato[7],"local":self.dato[8],"prov":self.dato[9],"fnac":self.dato[10],"falta":self.dato[11],"celu":self.dato[12],"mail":self.dato[13]}
-                if(check_password_hash(self.dato[14], request.json["password"])):
-                    return {"usuarios":self.usuario, "mensaje":"SI"}
-                else:
-                    return {"usuarios":self.usuario, "mensaje":"NOPASS"}
-            else:
-                return {"usuarios":"", "mensaje":"NO"}
+            self.conexion = db.obtener_conexion()
+            with self.conexion.cursor() as self.cursor:
+                self.cursor.execute("SELECT * FROM usuarios")
+            self.conexion.commit()
+            self.conexion.close()
+            self.datos = self.cursor.fetchall()
+            if (self.datos != None):
+                self.usuarios = []
+                for dato in self.datos:
+                    #self.usuario = {"nombre y apellido":dato[2]+" "+dato[3]}
+                    self.usuario = {"id":dato[0], "dni":dato[1],"nombre":dato[2], "apellido":dato[3],"direccion":dato[4],"numero":dato[5],"piso":dato[6],"depto":dato[7],"local":dato[8],"prov":dato[9],"fnac":dato[10],"falta":dato[11],"celu":dato[12],"mail":dato[13]}
+                    self.usuarios.append(self.usuario)
+                    #print (self.usuario)
+                #print (self.usuarios)
+                return {"usuarios":self.usuarios, "mensaje":"SI"}
+            else: 
+                return {"usuarios":self.usuarios, "mensaje":"NO"}
         except Exception as ex:
             print(ex)
-            return  {"usuarios":"", "mensaje":"ERROR"}
-        
-        
-        
-        
-        
-       
-        
-        
-        
-        
-        
-        
+            return  {"usuarios":self.usuarios, "mensaje":"ERROR"}
     
     
     def list_reservas(self,conexion):
