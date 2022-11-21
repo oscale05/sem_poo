@@ -8,6 +8,6 @@ def conexion_db():
         password="Larisa_2305",
         host="localhost",
         database="sem")
-    return conexion.cursor()
+    return conexion
         
     
