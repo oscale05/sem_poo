@@ -5,7 +5,7 @@ from flask  import Flask, render_template, jsonify , request
 from config import config
 import db
 
-
+import modelos
 from modelos import Sem_Db_Manager
 
 
@@ -70,60 +70,27 @@ def busqueda_x_usuario():
 @app.route('/registrar_usuario', methods=['POST'])
 def registro_de_usuario():
     dbase = Sem_Db_Manager()
-    result= dbase.registro_usuario()
-    if result["mensaje"]=="ERROR":
+    usuario= dbase.registro_usuario()
+    print("IMPRIMO USUARIO, ", usuario)
+    
+    vehiculo= dbase.registro_vehiculo()
+    if (usuario["mensaje"]=="ERROR" and vehiculo["mensaje"]=="ERROR"):
         return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
 
-    elif (result["mensaje"]=="SI"):
-        return jsonify({"status": True, "codigo": 200, "data":result["usuarios"], "mensaje": "USUARIO REGISTRADO"})
+    elif (vehiculo["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":vehiculo["vehiculos"], "mensaje": "REGISTRO EXITOSO"})
     
-    elif (result["mensaje"]=="HAY USUARIO"):
-        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "USUARIO YA EXISTENTE"}),456
+    elif (usuario["mensaje"]=="HAY USUARIO" and vehiculo["mensaje"]=="HAY DOMINIO"):
+        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "REGISTRO YA EXISTENTE"}),456
+    
+    elif (vehiculo["mensaje"]=="MAXIMO"):
+        return jsonify({"status": False, "codigo": 458, "data":"", "mensaje": "USUARIO YA TIENE 5 VEHICULOS REGISTRADOS"}),458
     
     else:
         return jsonify({"status":False, "codigo":455, "data":"","mensaje": "USUARIO NO PUEDO REGISTRARSE"}), 455
-    
-    result= dbase.registro_vehiculo()
-    if result["mensaje"]=="ERROR":
-        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
 
-    elif (result["mensaje"]=="SI"):
-        return jsonify({"status": True, "codigo": 200, "data":result["vehiculos"], "mensaje": "VEHICULO REGISTRADO"})
-    
-    elif (result["mensaje"]=="HAY DOMINIO"):
-        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "DOMINIO YA EXISTENTE PARA ESTE USUARIO"}),456
-    
-    elif (result["mensaje"]=="MAXIMO"):
-        return jsonify({"status": False, "codigo": 457, "data":"", "mensaje": "USUARIO ALCANZO LA MAXIMA CANTIDAD DE VEHICULOS"}),457
-    
-    
-    else:
-        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "DOMINIO NO PUDO REGISTRARSE"}), 455
-     
-    
-    
-     
 
-@app.route('/registrar_vehiculo', methods=['POST'])
-def registro_de_vehiculo():
-    dbase = Sem_Db_Manager()
-    result= dbase.registro_vehiculo()
-    if result["mensaje"]=="ERROR":
-        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
-
-    elif (result["mensaje"]=="SI"):
-        return jsonify({"status": True, "codigo": 200, "data":result["vehiculos"], "mensaje": "VEHICULO REGISTRADO"})
     
-    elif (result["mensaje"]=="HAY DOMINIO"):
-        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "DOMINIO YA EXISTENTE PARA ESTE USUARIO"}),456
-    
-    elif (result["mensaje"]=="MAXIMO"):
-        return jsonify({"status": False, "codigo": 457, "data":"", "mensaje": "USUARIO ALCANZO LA MAXIMA CANTIDAD DE VEHICULOS"}),457
-    
-    
-    else:
-        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "DOMINIO NO PUDO REGISTRARSE"}), 455
-     
      
      
 @app.route('/eliminar_reg_vehiculo', methods=['POST'])
@@ -145,21 +112,31 @@ def eliminacion_reg_vehiculo():
      
         
     
-''' 
-@app.route("/eliminar/<dni>", methods=["DELETE"])
-def eliminar_usuario(dni):
-    try:
-        cursor = conexion.connection.cursor()
-        sql = "DELETE FROM usuarios WHERE dniusuario = {0}".format(dni)
-        cursor.execute(sql)
-        conexion.connection.commit()
-        return jsonify({"mensaje":"USUARIO ELIMINADO"})
-              
-    except Exception as ex:
-        print(ex)
-        return jsonify({"mensaje":"ERROR"})
+
+@app.route("/eliminar", methods=["POST"])
+def eliminar_usuario():
+    dbase = Sem_Db_Manager()
+    usuario= dbase.elimino_usuario()
+    print("IMPRIMO USUARIO, ", usuario)
+
+    if (usuario["mensaje"]=="ERROR" and usuario["mensaje"]=="ERROR"):
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
+
+    elif (vehiculo["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":vehiculo["vehiculos"], "mensaje": "REGISTRO EXITOSO"})
     
-@app.route("/actualizar/<dni>", methods=["PUT"])
+    elif (usuario["mensaje"]=="HAY USUARIO" and vehiculo["mensaje"]=="HAY DOMINIO"):
+        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "REGISTRO YA EXISTENTE"}),456
+    
+    elif (vehiculo["mensaje"]=="MAXIMO"):
+        return jsonify({"status": False, "codigo": 458, "data":"", "mensaje": "USUARIO YA TIENE 5 VEHICULOS REGISTRADOS"}),458
+    
+    else:
+        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "USUARIO NO PUEDO REGISTRARSE"}), 455
+
+
+    
+''' @app.route("/actualizar/<dni>", methods=["PUT"])
 def actualizar_usuario(dni):
     try:
         cursor = conexion.connection.cursor()

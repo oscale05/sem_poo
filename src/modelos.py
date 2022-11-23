@@ -65,11 +65,6 @@ class Sem_Db_Manager(object):
             self.conn.close()
             if self.dato != None:
                 return {"usuarios":self.dato, "mensaje":"SI"}
-                ''' self.usuario = {"id":self.dato[0], "dni":self.dato[1],"nombre":self.dato[2], "apellido":self.dato[3],"direccion":self.dato[4],"numero":self.dato[5],"piso":self.dato[6],"depto":self.dato[7],"local":self.dato[8],"prov":self.dato[9],"fnac":self.dato[10],"falta":self.dato[11],"celu":self.dato[12],"mail":self.dato[13]}
-                if(check_password_hash(self.dato[14], request.json["password"])):
-                    return {"usuarios":self.usuario, "mensaje":"SI"}
-                else:
-                    return {"usuarios":self.usuario, "mensaje":"NOPASS"} '''
             else:
                 return {"usuarios":"", "mensaje":"NO"}
         except Exception as ex:
@@ -148,8 +143,114 @@ class Sem_Db_Manager(object):
         except Exception as ex:
             print(ex)
             return  {"vehiculos":"", "mensaje":"ERROR"}
-       
+    
+    
+    def busqueda_eliminar_usuario_vehiculo(self):
         
+        try:
+            self.conn = db.conexion_db()
+            self.cursor = self.conn.cursor()
+            self.cursor.execute("SELECT COUNT(*) FROM usuario_vehiculo WHERE id_dniusuario = %s", (request.json["dniusuario"],))
+            self.conn.commit()
+            self.dato = self.cursor.fetchone()
+            print("IMPRIMO LA CANTIDAD DE REGISTROS QUE HAY EN LA TABLA USUARIO_VEHICULO PARA UN USUARIO DETERMINADO, ",self.dato[0])
+            self.conn.close()
+            if self.dato != None:
+                return {"usuarios":self.dato, "mensaje":"SI"}
+            else:
+                return {"vehiculos":"", "mensaje":"NO"}
+            
+            
+        except Exception as ex:
+            print(ex)
+            return  {"vehiculos":"", "mensaje":"ERROR"}
+    
+    
+    
+    
+    def elimino_usuario(self):
+        self.hay_reg_usuario_vehiculo = busqueda_eliminar_usuario_vehiculo()
+        if (self.hay_reg_usuario_vehiculo["mensaje"]=="ERROR"):
+            if (self.hay_reg_usuario_vehiculo["mensaje"]=="SI"):
+                #   DELETE EL REGISTRO DE USUARIO_VEHICULO 
+                try:
+                    self.conn = db.conexion_db()
+                    self.cursor = self.conn.cursor()
+                    print("ESTOS SON LOS VALORES DEL CAMPO A ELIMINAR: ", (request.json["dniusuario"],))
+                    
+                    
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = dniusuario and  id_domvehiculo = domvehiculo")
+                    self.cursor.execute("DELETE FROM usuario_vehiculo WHERE id_dniusuario = ?", (request.json["dniusuario"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE (id_dniusuario  and  id_domvehiculo) VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #sql="insert into EMPLOYEE values ('%s', '%s', '%d', '%c', '%d' )" % ('José', 'Domingo', 20, 'M', 2000)
+                    self.conn.commit()
+                    self.conn.close()
+                    print("ESTOY ELIMINANDO DE LA TABLA USUARIO_VEHICULO")
+                except Exception as ex:
+                    print(ex)
+                    return  {"vehiculos":"", "mensaje":"ERROR"}    
+                #   DELETE EL REGISTRO DE TABLA USUARIO    
+                try:    
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = dniusuario and  id_domvehiculo = domvehiculo")
+                    self.cursor.execute("DELETE FROM usuario WHERE dniusuario = ?", (request.json["dniusuario"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE (id_dniusuario  and  id_domvehiculo) VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #sql="insert into EMPLOYEE values ('%s', '%s', '%d', '%c', '%d' )" % ('José', 'Domingo', 20, 'M', 2000)
+                    self.conn.commit()
+                    print("ESTOY ELIMINANDO DE LA TABLA USUARIO")
+                    self.conn.close()
+                    return {"vehiculos":"", "mensaje":"SI"}
+
+                except Exception as ex:
+                    print(ex)
+                    return  {"vehiculos":"", "mensaje":"ERROR"}
+            
+            
+            elif (self.hay_reg_usuario_vehiculo["mensaje"]=="NO"):
+                try:
+                    self.conn = db.conexion_db()
+                    self.cursor = self.conn.cursor()
+                    print("ESTOS SON LOS VALORES DEL CAMPO A ELIMINAR: ", (request.json["dniusuario"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = dniusuario and  id_domvehiculo = domvehiculo")
+                    self.cursor.execute("DELETE FROM usuario WHERE dniusuario = ?", (request.json["dniusuario"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE (id_dniusuario  and  id_domvehiculo) VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #sql="insert into EMPLOYEE values ('%s', '%s', '%d', '%c', '%d' )" % ('José', 'Domingo', 20, 'M', 2000)
+                    self.conn.commit()
+                    self.conn.close()
+                    print("ESTOY ELIMINANDO DE LA TABLA USUARIO")
+                    
+                
+                    return {"vehiculos":"", "mensaje":"SI"}
+                
+                except Exception as ex:
+                    print(ex)
+                    return  {"vehiculos":"", "mensaje":"ERROR"}
+                    
+            else:
+                return  {"vehiculos":"", "mensaje":"ERROR"}   
+                
+                
+                
+                
+                
+                
+                
+            
+            try:
+                self.conn = db.conexion_db()
+                self.cursor = self.conn.cursor()
+                self.passhashed=generate_password_hash(request.json["passusuario"])
+                self.sql ="""INSERT INTO usuarios (dniusuario, nomusuario, apeusuario, direusuario, numusuario, pisousuario, deptousuario, localusuario, provusuario, 
+                    fnacusuario, faltusuario, celusuario, mailusuario, passusuario) 
+                    VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}')""".format(request.json["dniusuario"],request.json["nomusuario"],request.json["apeusuario"],request.json["direusuario"],request.json["numusuario"],request.json["pisousuario"],request.json["deptousuario"],request.json["localusuario"],request.json["provusuario"],request.json["fnacusuario"],request.json["faltusuario"],request.json["celusuario"],request.json["mailusuario"], self.passhashed)
+                self.cursor.execute(self.sql)
+                self.conn.commit()
+                self.conn.close()
+                
+                return {"usuarios":"", "mensaje":"SI"}
+                    
+            except Exception as ex:
+                print(ex)
+                return  {"usuarios":"", "mensaje":"ERROR"}    
         
     def registro_usuario(self):
         self.hay_usuario = self.busqueda_usuario()
@@ -180,6 +281,7 @@ class Sem_Db_Manager(object):
      
         
     def registro_vehiculo(self):
+        print("ESTOY DENTRO DE REGISTRO_VEHICULO")
         self.hay_usuario_vehiculo = self.busqueda_usuario_vehiculo()
         print ("IMPRIMO SELF.HAY_USUARIO_VEHICULO, ", self.hay_usuario_vehiculo["mensaje"])
         if (self.hay_usuario_vehiculo["mensaje"]!="ERROR"):
@@ -242,6 +344,10 @@ class Sem_Db_Manager(object):
         else:
             return {"vehiculos":"", "mensaje":"ERROR"}
                     
+                    
+                    
+                    
+                    
     def eliminar_reg_vehiculo(self):
         self.hay_reg_usuario_vehiculo = self.busqueda_eliminacion_reg_usuario_vehiculo()
         print ("IMPRIMO SELF.HAY__REG_USUARIO_VEHICULO, ", self.hay_reg_usuario_vehiculo["mensaje"])
@@ -253,12 +359,17 @@ class Sem_Db_Manager(object):
                 try:
                     self.conn = db.conexion_db()
                     self.cursor = self.conn.cursor()
-                    self.sql=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = s% AND  id_domvehiculo = s%")
-                    reg =(request.json["dniusuario"],request.json["domvehiculo"],)
-                    print("ESTOY IMPRIMIENDO EL REG, ", reg)
-                    self.cursor.execute(self.sql, reg)
+                    print("ESTOS SON LOS VALORES DE LOS CAMPOS A ELIMINAR: ", (request.json["dniusuario"],request.json["domvehiculo"],))
+                    dniusuario = request.json["dniusuario"]
+                    domvehiculo = request.json["domvehiculo"]
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = dniusuario and  id_domvehiculo = domvehiculo")
+                    self.cursor.execute("DELETE FROM usuario_vehiculo WHERE id_dniusuario = ? AND id_domvehiculo = ?", (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE (id_dniusuario  and  id_domvehiculo) VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #sql="insert into EMPLOYEE values ('%s', '%s', '%d', '%c', '%d' )" % ('José', 'Domingo', 20, 'M', 2000)
                     self.conn.commit()
                     self.conn.close()
+                    print("ESTOY ELIMINANDO DE LA TABLA USUARIO_VEHICULO")
+                
                     return {"vehiculos":"", "mensaje":"SI"}
                 
                 except Exception as ex:
@@ -270,10 +381,14 @@ class Sem_Db_Manager(object):
                     print ("ESTOY ACA")
                     self.conn = db.conexion_db()
                     self.cursor = self.conn.cursor()
-                    self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = s% AND  id_domvehiculo =s%", (request.json["dniusuario"],request.json["domvehiculo"],))
+                    self.cursor.execute("DELETE FROM usuario_vehiculo WHERE id_dniusuario = ? AND id_domvehiculo = ?", (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario  and  id_domvehiculo VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = s% AND  id_domvehiculo =s%", (request.json["dniusuario"],request.json["domvehiculo"],))
                     self.conn.commit()
-                    domvehiculo = request.json["domvehiculo"]
-                    self.cursor.execute=("DELETE FROM vehiculo WHERE id_domvehiculo = s% ", domvehiculo)
+                    self.domvehiculo = (request.json["domvehiculo"],)
+                    self.cursor.execute("DELETE FROM vehiculo WHERE domvehiculo = ?", (request.json["domvehiculo"],))
+                    #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE domvehiculo VALUES ('?')" % (request.json["domvehiculo"],))
+                    #self.cursor.execute=("DELETE FROM vehiculo WHERE domvehiculo = self.domvehiculo")
                     self.conn.commit()
                     self.conn.close()
                     
