@@ -1,4 +1,4 @@
-#!/usr/bin/etc  python3
+#!/usr/bin/python
 #-*- coding: utf-8 -*-
 
 from flask  import Flask, render_template, jsonify , request
@@ -89,12 +89,29 @@ def registro_de_usuario():
     else:
         return jsonify({"status":False, "codigo":455, "data":"","mensaje": "USUARIO NO PUEDO REGISTRARSE"}), 455
 
+@app.route('/registrar_vehiculo', methods=['POST'])
+def registro_de_vehiculo():
+    db = Sem_Db_Manager()
+    result= db.registro_vehiculo()
+    if result["mensaje"]=="ERROR":
+        return jsonify({"status":False, "codigo":452, "data":"", "mensaje": "ERROR EN LA CONSULTA SQL"}), 452
 
+    elif (result["mensaje"]=="SI"):
+        return jsonify({"status": True, "codigo": 200, "data":result["vehiculos"], "mensaje": "VEHICULO REGISTRADO"})
+    
+    elif (result["mensaje"]=="HAY DOMINIO"):
+        return jsonify({"status": False, "codigo": 456, "data":"", "mensaje": "DOMINIO YA EXISTENTE"}),456
+    
+    else:
+        return jsonify({"status":False, "codigo":455, "data":"","mensaje": "DOMINIO NO PUDO REGISTRARSE"}), 455
+     
+    
     
      
      
 @app.route('/eliminar_reg_vehiculo', methods=['POST'])
 def eliminacion_reg_vehiculo():
+    print("estoy entrando")
     dbase = Sem_Db_Manager()
     result= dbase.eliminar_reg_vehiculo()
     if result["mensaje"]=="ERROR":
@@ -113,7 +130,7 @@ def eliminacion_reg_vehiculo():
         
     
 
-@app.route("/eliminar", methods=["POST"])
+@app.route("/eliminar_usuario", methods=["POST"])
 def eliminar_usuario():
     dbase = Sem_Db_Manager()
     usuario= dbase.elimino_usuario()

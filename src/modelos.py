@@ -1,4 +1,4 @@
-#! /usr/bin/etc  python3
+#! /usr/bin/python
 #-*- coding: utf-8 -*-
 
 from flask  import render_template, jsonify , request
@@ -19,7 +19,7 @@ class Sem_Db_Manager(object):
             self.conn.close()
             if self.dato != None:
                 self.usuario = {"id":self.dato[0], "dni":self.dato[1],"nombre":self.dato[2], "apellido":self.dato[3],"direccion":self.dato[4],"numero":self.dato[5],"piso":self.dato[6],"depto":self.dato[7],"local":self.dato[8],"prov":self.dato[9],"fnac":self.dato[10],"falta":self.dato[11],"celu":self.dato[12],"mail":self.dato[13]}
-                if(check_password_hash(self.dato[14], request.json["password"])):
+                if(check_password_hash(self.dato[14], request.json["passusuario"])):
                     return {"usuarios":self.usuario, "mensaje":"SI"}
                 else:
                     return {"usuarios":self.usuario, "mensaje":"NOPASS"}
@@ -106,6 +106,7 @@ class Sem_Db_Manager(object):
             self.dato = self.cursor.fetchone()
             print("IMPRIMO LA CANTIDAD DE REGISTROS QUE HAY EN LA TABLA USUARIO_VEHICULO PARA UN USUARIO DETERMINADO, ",self.dato[0])
             if self.dato[0] < 5: 
+                #AVERIGUO SI YA HAY UN REGISTRO PARA EL PARA USUARIO VEHICULO EN LA TABLA USUARIO_VEHICULO
                 self.cursor.execute("SELECT * FROM usuario_vehiculo WHERE id_dniusuario = %s AND id_domvehiculo = %s", (request.json["dniusuario"],request.json["domvehiculo"],))
                 self.conn.commit()
                 self.dato = self.cursor.fetchone()
@@ -145,7 +146,8 @@ class Sem_Db_Manager(object):
             return  {"vehiculos":"", "mensaje":"ERROR"}
     
     
-    def busqueda_eliminar_usuario_vehiculo(self):
+    
+    def busqueda_eliminar_usuario_vehiculos(self):
         
         try:
             self.conn = db.conexion_db()
@@ -166,8 +168,6 @@ class Sem_Db_Manager(object):
             return  {"vehiculos":"", "mensaje":"ERROR"}
     
     
-    
-    
     def elimino_usuario(self):
         self.hay_reg_usuario_vehiculo = busqueda_eliminar_usuario_vehiculo()
         if (self.hay_reg_usuario_vehiculo["mensaje"]=="ERROR"):
@@ -176,9 +176,6 @@ class Sem_Db_Manager(object):
                 try:
                     self.conn = db.conexion_db()
                     self.cursor = self.conn.cursor()
-                    print("ESTOS SON LOS VALORES DEL CAMPO A ELIMINAR: ", (request.json["dniusuario"],))
-                    
-                    
                     #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE id_dniusuario = dniusuario and  id_domvehiculo = domvehiculo")
                     self.cursor.execute("DELETE FROM usuario_vehiculo WHERE id_dniusuario = ?", (request.json["dniusuario"],))
                     #self.cursor.execute=("DELETE FROM usuario_vehiculo WHERE (id_dniusuario  and  id_domvehiculo) VALUES ('%s', '%s')" % (request.json["dniusuario"],request.json["domvehiculo"],))
